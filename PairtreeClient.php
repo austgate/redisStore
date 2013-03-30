@@ -144,20 +144,6 @@ class PairtreeClient {
 	}
 	
 	/**
-	 * Function to check if a path is a file
-	 * @param string $id
-	 * @param boolean
-	 */
-	public function isfile ($id, $filepath=null) {
-		$isfile = false;
-		$filepath = join(DIRECTORY_SEPARATOR, $this->pp->get_id_from_dirpath($id)).DIRECTORY_SEPARATOR.$stream;
-		if (is_file($filepath)) {
-			$isfile = true;
-		}
-		return $isfile;	
-	}
-	
-	/**
 	 * Function to check if a path is a key in the set. 
 	 * @param string $id
 	 * @param boolean
@@ -319,7 +305,7 @@ class PairtreeClient {
 			$dir = $this->dir . ':keys';
 		}
 		$keys = self::listIds($dir);
-		print_r($keys);
+
 		// Loop through each key and delete them.
 		foreach ($keys as $key) {
 			$this->redis->del($key);
@@ -329,52 +315,6 @@ class PairtreeClient {
 		if (!$this->redis->del($dir)) {
 			throw new Exception("delDirectory error: $dir could not be deleted");
 		}
-	}
-	
-	/**
-	 * Function to delete the key from the set
-	 * 
-	 * @param string $id
-	 * @param string $path
-	 * @throws Exception
-	 */
-	public function del_path ($id,$path) {
-		if (self::exists($id) !== TRUE) {
-			throw new Exception($id .' cannot be deleted from the FS');
-		}
-		
-		if (self::isfile($id, $filepath)) {
-			unlink($id);
-		} else {
-			$it = new RecursiveDirectoryIterator($id);
-			$files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
-			foreach($files as $file){
-				if ($file->isDir()){
-					rmdir($file->getRealPath());
-				} else {
-					unlink($file->getRealPath());
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Function to delete the object from the FS
-	 * @param string $id
-	 */
-	public function delete_object($id) {
-		if (!exists($id)) {
-			throw new Exception ($id.' does not exist');
-		}
-	    $it = new RecursiveDirectoryIterator( 'data');
-        $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
-        foreach($files as $file){
-          if ($file->isDir()){
-            rmdir($file->getRealPath());
-          } else {
-            unlink($file->getRealPath());
-          }
-        }
 	}
 	
 	/**
@@ -402,37 +342,5 @@ class PairtreeClient {
 	 */
 	private function get_new_id () {
 		return substr(rand(0,999999999999999), 0, 14);
-	}
-	
-	/**
-	 * Function to get the Pairtree object
-	 * 
-	 * @param unknown_type $object
-	 * @param unknown_type $createifnotexist
-	 * @throws Exception
-	 */
-	public function get_object($object, $createifnotexist=false) {
-		if (!file_exists($object) && $createifnotexist === true) {
-			throw new Exception('There is no object of that name');
-		}
-	
-		if (!file_exists($this->dir.DIRECTORY_SEPARATOR.$object) && $createifnotexist === false) {
-			self::create_object($this->dir.DIRECTORY_SEPARATOR.$object);
-		}
-		return file_get_contents($object);
-	}
-	
-	/**
-	 * Function to create a Pairtree object in storage
-	 * @param string $object
-	 * @throws Exception
-	 */
-	public function create_object ($object) {
-		if (file_exists($object)) {
-			throw new Exception ('Object already exists');
-		}
-		$fh = fopen($this->dir.DIRECTORY_SEPARATOR.$object, 'w');
-		fwrite($object, filesize($fh));
-		fclose($fh);
 	}
 }

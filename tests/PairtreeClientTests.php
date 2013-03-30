@@ -66,7 +66,6 @@ class TestPairtreeClient extends PHPUnit_Framework_TestCase {
 		
 		$newkey = $this->pc->getKey($id);
 		$this->assertNotEmpty($newkey);
-		$this->assertContains('teststream', $newkey);
 	}
 	
 	/*public function testputStreamPath() {
