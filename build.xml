@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Phing build file which runs tests and builds the documentation -->
+<build>
+
+<!-- Run tests -->
+
+<!-- the build docs -->
+</build>
