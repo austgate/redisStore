@@ -34,14 +34,8 @@ class PairtreeStorageFactory
 	 * @param number $shorty
 	 * @param string $hashlib
 	 */
-    public function pairtreeStorage($dir, $uriBase, $shorty = 2, $hashlib = null) 
+    public static function pairtreeStorage($dir, $uriBase, $shorty = 2, $hashlib = null) 
     {
-        $this->pc = new PairtreeClient();
-        if (class_exists($this->pc($dir, $uriBase, $shorty = 2, $hashlib = null))) {
-            return $this->pc($dir, $uriBase, $shorty = 2, $hashlib = null);
-	    }
-	    else {
-            print "Pairtree Storage Factory does not exist";
-        }
+        return new PairtreeClient($dir, $uriBase, $shorty = 2, $hashlib = null);
     }
 }

@@ -21,23 +21,18 @@ require 'Predis/Autoloader.php';
  *
  */
 class PairtreeClient {
-	//The PairtreePath
-	protected $pp;
 	
 	//The base name used for the Redis set
-	protected $dir;
+	private $dir;
 	
 	//The uri base used in the keys
-	protected $uriBase;
+	private $uriBase;
 	
 	//The length of the shorty used to split the name into the path
-	protected $shortyLength;
+	private $shortyLength;
 	
-	//the hash library used 
-	protected $hashlib;
-	
-	//redis client
-	protected $redis;
+	// The hash library used.
+	private $hashlib;
 	
 	/**
 	 * Constructor called by the storage factory
@@ -158,9 +153,13 @@ class PairtreeClient {
 	
 	/**
 	 * Function to create streams in the path
-	 * @param string $id the main path
-	 * @param string $path an optional subfolder
-	 * @param string $streamName name of the file to be written to
+	 * 
+	 * @param string $id 
+	 *    The main path
+	 * @param string $path 
+	 *    An optional subfolder
+	 * @param string $streamName 
+	 *    Name of the value to be store the data in the hash
 	 * @param string $bytestream 
 	 * @param int $buffer_size
 	 * 
@@ -173,14 +172,12 @@ class PairtreeClient {
 		if ($path) {
 			if (self::exists($path) !== TRUE) {
 				$dirpath = $id . DIRECTORY_SEPARATOR . $path;
-				print "extra directory $dirpath";
 			} 
 		} else {
 		    if (self::exists($id) !== TRUE) {
 			    $dirpath = $id;
 		    } 
 		}
-		if ($path) { print "path $dirpath"; }
 		// Put the key in the set based on the dir name and 'keys'
 		$this->redis->sadd($this->dir.':keys', (string) $dirpath);
         // Set the hash set with the streamName as the key.
@@ -328,7 +325,7 @@ class PairtreeClient {
 		$dirpath = $id;
 		$exists = FALSE;
 		if (!$path) {
-			$path =$this->dir;
+			$path = $this->dir;
 		}
 
 		if ($this->redis->sismember($path . ':keys', $dirpath)) {
