@@ -122,19 +122,26 @@ class PairtreeClient {
 	 * Function to list the keys for a defined set
 	 * 
 	 * @param string $path 
-	 *   The directory of the path
+	 *   The directory of the path. If this is not set, then list the default directory.
 	 * @return Array
 	 *    An array of the Keys
 	 */
-	public function listIds($dir = null) {
+	public function listIds($dir = null, $listall = FALSE) {
 		$listdirs = array();
 		$objects = array();
-		// FS can use . as a root
-		// Can something analogous exist in Redis?
+
 		if (!$dir) {
 			$dir = $this->dir;
 		}
 		$objects = $this->redis->smembers($dir. ':keys');
+		
+		if ($listall === TRUE) {
+			foreach ($objects as $object) {
+				// Load the key object.
+				$key = self::getKey($object);
+				$objects[$object] = $key;
+			}
+		}
 		return $objects;
 	}
 	
@@ -152,7 +159,11 @@ class PairtreeClient {
 	}
 	
 	/**
-	 * Function to create streams in the path
+	 * Function to create streams in the stores. 
+	 * 
+	 * It takes the identifier and then returns the stored path. 
+	 * If foobar+ is given, then fo/ob/ar/+ is returned and the 
+	 * stream is stored against this key.
 	 * 
 	 * @param string $id 
 	 *    The main path
@@ -161,34 +172,28 @@ class PairtreeClient {
 	 * @param string $streamName 
 	 *    Name of the value to be store the data in the hash
 	 * @param string $bytestream 
-	 * @param int $buffer_size
+	 * @param number $buffer_size
 	 * 
-	 * @return boolean
+	 * @return string
+	 *   returns the directory path of the string
 	 */
 	public function putStream($id, $path, $streamName, $bytestream, $buffer_size=8192) 
 	{
-		$stored = FALSE;
 		$dirpath = null;
 		if ($path) {
-			if (self::exists($path) !== TRUE) {
-				$dirpath = $id . DIRECTORY_SEPARATOR . $path;
-			} 
+			$dirpath = $id . $path;
 		} else {
-		    if (self::exists($id) !== TRUE) {
-			    $dirpath = $id;
-		    } 
+		    $dirpath = $id;
 		}
+		$dirpath = $this->pp->id_to_dirpath($dirpath, '', $this->shortyLength);
 		// Put the key in the set based on the dir name and 'keys'
-		$this->redis->sadd($this->dir.':keys', (string) $dirpath);
+		$this->redis->sadd($this->dir.':keys', $dirpath);
         // Set the hash set with the streamName as the key.
-        // If Redis confirms storage, confirm to the calling code
-		if ($this->redis->hset( $dirpath, $streamName, $bytestream)) {
-			// If set, then store the time.
-			$this->redis->hset($dirpath, 'time', time());
-			$stored = TRUE;
-		}
-		//@todo look at filesystem hashing for replication.
-		return $stored;
+		$this->redis->hset( $dirpath, $streamName, $bytestream);
+		// Then set update time
+		$this->redis->hset($dirpath, "$streamName:time", time());
+
+		return $dirpath;
 	}
 	
 	/**
@@ -226,31 +231,28 @@ class PairtreeClient {
 	 * Function to read the given filestream
 	 * 
 	 * @param string $id  
-	 *   The given filepath id
+	 *   The given filepath id.
 	 * @param string $path 
 	 *   The optional directory
 	 * @param string $streamName 
 	 *   The key to be opened in the 
-	 * @param boolean $streamable if the filecontents are streamable or not @todo to implement this 
+	 * @param boolean $streamable 
+	 *   If the filecontents are streamable or not 
+	 *   @todo to implement this 
 	 *  if streamble is true, then return the filehandle and close 
 	 *  @return file object
 	 */
-	public function getStream($id, $path, $streamName, $streamable=false) 
+	public function getStream($id, $streamName, $streamable=false) 
 	{
 		$dirpath=null;
-		if ($path) {
-			if (self::exists($path, $id) !== TRUE) {
-				throw new Exception('Stream does not exist');
-			} else {
-				$dirpath = $id.DIRECTORY_SEPARATOR.$path;
-			}
+		
+		if (self::exists($id) !== TRUE) {
+			throw new Exception ('Directory did not exist');
 		} else {
-			if (self::exists($id) !== TRUE) {
-				throw new Exception ('Directory did not exist');
-			} else {
-				$dirpath = $id;
-			}
+			$dirpath = $id;
 		}
+		// Retrieve the id from the given path
+		//$dirpath = $this->pp->get_id_from_dirpath($dirpath);
 		//  Do we need to test if it is a member of the set?
 		$fileobj = $this->redis->hget($dirpath, $streamName);
         if (!$fileobj) {
@@ -273,15 +275,8 @@ class PairtreeClient {
 	 * 
 	 * @throws Exception
 	 */
-	public function delStream($id, $path=null, $streamName) {
-		//$filepath = join(DIRECTORY_SEPARATOR, $this->pp->get_id_from_dirpath($id));
+	public function delStream($id, $streamName) {
 		$filepath = $id;
-		
-		if ($path) {
-			$filepath = $path . DIRECTORY_SEPARATOR . $filepath;
-		} else {
-			$filepath = $id;
-		}
 		
 		if (self::exists($filepath) !== TRUE) {
 			throw new Exception($filepath .' does not exist');
