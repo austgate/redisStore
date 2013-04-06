@@ -11,47 +11,47 @@ class TestPairtreeClient extends PHPUnit_Framework_TestCase {
 		unset($this->pc);
 	}
 	
-	/* id_encode */
-	public function testid_encodenoextra() {
+	/* idEncode */
+	public function testidEncodenoextra() {
 		$id = 'abcd';
-		$nid = $this->pc->id_encode($id);
+		$nid = $this->pc->idEncode($id);
 		$this->assertEquals('abcd', $nid);
 	}
-	public function testid_encodecolon() {
+	public function testidEncodecolon() {
 		$id = 'abc:';
-		$nid = $this->pc->id_encode($id);
+		$nid = $this->pc->idEncode($id);
 		$this->assertEquals('abc+', $nid);
 	}
-	public function testid_encodeequals() {
+	public function testidEncodeequals() {
 		$id = 'abc.';
-		$nid = $this->pc->id_encode($id);
+		$nid = $this->pc->idEncode($id);
 		$this->assertEquals('abc,', $nid);
 	}
-	public function testid_encodeslash() {
+	public function testidEncodeslash() {
 		$id = 'abc/';
-		$nid = $this->pc->id_encode($id);
+		$nid = $this->pc->idEncode($id);
 		$this->assertEquals('abc=', $nid);
 	}
 	
-	/* id_decode */
-	public function testid_decodenoextra() {
+	/* idDecode */
+	public function testidDecodenoextra() {
 		$id = 'abcd';
-		$nid = $this->pc->id_decode($id);
+		$nid = $this->pc->idDecode($id);
 		$this->assertEquals('abcd', $nid);
 	}
-	public function testid_decodecolon() {
+	public function testidDecodecolon() {
 		$id = 'abc+';
-		$nid = $this->pc->id_decode($id);
+		$nid = $this->pc->idDecode($id);
 		$this->assertEquals('abc:', $nid);
 	}
-	public function testid_decodeequals() {
+	public function testidDecodeequals() {
 		$id = 'abc,';
-		$nid = $this->pc->id_decode($id);
+		$nid = $this->pc->idDecode($id);
 		$this->assertEquals('abc.', $nid);
 	}
-	public function testid_decodeslash() {
+	public function testidDecodeslash() {
 		$id = 'abc=';
-		$nid = $this->pc->id_decode($id);
+		$nid = $this->pc->idDecode($id);
 		$this->assertEquals('abc/', $nid);
 	}
 	
@@ -64,7 +64,8 @@ class TestPairtreeClient extends PHPUnit_Framework_TestCase {
     	$stored = $this->pc->putStream($id, $path, $streamName, $bytestream);
 		$this->assertEquals($stored, 'te/st');
 		
-		$newkey = $this->pc->getKey($id);
+		$nid = 'te/st';
+		$newkey = $this->pc->getKey($nid);
 		$this->assertNotEmpty($newkey);
 	}
 	
@@ -102,7 +103,8 @@ class TestPairtreeClient extends PHPUnit_Framework_TestCase {
 		$stored = $this->pc->putStream($id, $path, $streamName, $bytestream);
 		$this->assertEquals($stored, 'te/st');
 	
-		$newkey = $this->pc->getKey($id);
+		$nid = 'te/st';
+		$newkey = $this->pc->getKey($nid);
 		$this->assertNotEmpty($newkey);
 	}
 	

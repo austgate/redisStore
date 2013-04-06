@@ -47,7 +47,7 @@ class PairtreePath {
 	 * The /+= characters must be replaced as per the spec
 	 * @param string $id
 	 */
-	public function id_encode($id) {
+	public function idEncode($id) {
 		//first pass: utf8 encode the string
 		$encode = utf8_encode($id);
 		$newid = preg_replace('/["\*\+,<=>\?\\\^\|]|[^!-~]/u', self::hex2char($encode), $encode);
@@ -73,7 +73,7 @@ class PairtreePath {
 	 * Function to decode the the ppath file back from the hex and returns a string
 	 * @param string $id
 	 */
-	public function id_decode($id) {
+	public function idDecode($id) {
 		$second_pass_m = array('+'=>':', ','=>'.', '='=>'/');
 		
 		$arr = str_split($id);
@@ -97,7 +97,7 @@ class PairtreePath {
 	 * @return Path for the Pairtree object
 	 */
 	public function get_id_from_dirpath ($dirpath, $pairtree=null) {
-		return self::id_decode(self::get_path_from_dirpath($dirpath));
+		return self::idDecode(self::get_path_from_dirpath($dirpath));
 	}
 	
 	/**
