@@ -219,6 +219,9 @@ class PairtreeClient
         $this->redis->hset($dirpath, $streamName, $bytestream);
         // Then set update time
         $this->redis->hset($dirpath, "time", time());
+        $size = filesize($bytestream);
+        // set the size of the stream
+        $this->redis->hset($dirpath, "size", time());
 
         return $dirpath;
     }
