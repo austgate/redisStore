@@ -159,10 +159,10 @@ class TestPairtreeClient extends PHPUnit_Framework_TestCase {
 		$dir = 'notexist';
 		try {
 		    $this->pc->delDirectory($dir);
-		} catch (Exception $e) {
+		} catch (PairtreeException $e) {
 			return;
 		}
-		//$this->setExpectedException('Exception');
+		$this->setExpectedException('PairtreeException');
 		$this->fail("delDirectory error: notexist could not be deleted");
 	}
 }
