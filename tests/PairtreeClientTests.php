@@ -120,13 +120,8 @@ class TestPairtreeClient extends PHPUnit_Framework_TestCase {
 	// Testing default base set.
 	public function testlistIdsDefaultSet () {
 		$nid = $this->pc->listIds();
-		$this->assertContains('te/st', $nid);
-	}
-	
-	// Testing the 
-	public function testlistIdsListall () {
-		$nid = $this->pc->listIds('', TRUE);
-		$this->assertContains('te/st', $nid);
+		$this->assertArrayHasKey('te/st', $nid);
+		$this->assertArrayNotHasKey('test', $nid);
 	}
 	
 	/* Delete the key */
