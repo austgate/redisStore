@@ -143,29 +143,26 @@ class PairtreeClient
      * 
      * @param string $dir      
      *   The directory of the path. If this is not set, then list the default directory.
-     * @param boolean $listall 
-     *   If set to true, then list all the details of the keys
      *   
      * @return Array
-     *    An array of the Keys
+     *    An array of the Keys with times
      */
-    public function listIds($dir = null, $listall = false) 
+    public function listIds($dir = null) 
     {
         $listdirs = array();
-        $objects = array();
+        $objects = $newobjects = array();
 
         if (!$dir) {
             $dir = $this->_dir;
         }
         $objects = $this->redis->smembers($dir. ':keys');
-        
-        if ($listall === true) {
-            foreach ($objects as $object) {
-                // Load the key object.
-                $key = self::getKey($object);
-                $objects[$object] = $key['time'];
-            }
+
+        foreach ($objects as $object) {
+            // Load the key object.
+            $key = self::getKey($object);
+            $newobjects[$object] = $key['time'];
         }
+        $objects = $newobjects;
         return $objects;
     }
     
